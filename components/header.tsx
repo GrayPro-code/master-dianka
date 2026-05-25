@@ -22,6 +22,15 @@ export function Header() {
     e.preventDefault()
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
+  {/* ссылка на секцию BOOKING при наведении на лампочку  */}
+  const scrollToBooking = (e: React.MouseEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    const bookingSection = document.getElementById("booking")
+    if (bookingSection) {
+      bookingSection.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
 
   return (
     <motion.div>
@@ -87,6 +96,7 @@ export function Header() {
               className="relative p-2 cursor-pointer group"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              onClick={scrollToBooking} 
             >
               <motion.div
                 className="block rounded-[100px] relative z-[2]"

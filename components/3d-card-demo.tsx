@@ -3,14 +3,10 @@
 import { useMemo, useState, useRef } from "react"
 import Image from "next/image"
 import { motion, useMotionValue } from "framer-motion"
-
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card"
 import { HighlightedText } from "./highlighted-text"
-
 import { Lamp } from "@/components/lamp"
-
 import { BackgroundEffects } from "@/components/shared/solution-hero-background"
-
 import { useGravityEffect } from "@/hooks/use-gravity-effect"
 import { useInitElasticBoxPositions } from "@/hooks/use-init-elastic-box-positions"
 import { useIsMobile } from "@/hooks/use-mobile"
