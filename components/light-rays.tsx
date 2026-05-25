@@ -51,6 +51,15 @@ const LightRays: React.FC<LightRaysProps> = ({
   const rendererRef = useRef<Renderer | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const dynamicOriginX = dynamicOrigin?.x
+  const dynamicOriginY = dynamicOrigin?.y
+
+  const updateDynamicRayOrigin = () => {
+    if (!uniformsRef.current || !rendererRef.current || !dynamicOriginX || !dynamicOriginY) return
+    const dpr = rendererRef.current.dpr
+    uniformsRef.current.rayPos.value[0] = dynamicOriginX.get() * dpr
+    uniformsRef.current.rayPos.value[1] = dynamicOriginY.get() * dpr
+  }
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -94,6 +103,8 @@ const frag = `precision highp float; uniform float iTime; uniform vec2 iResoluti
             const { anchor, dir } = getAnchorAndDir(raysOrigin, w, h)
             uniforms.rayPos.value = anchor
             uniforms.rayDir.value = dir
+        } else {
+            updateDynamicRayOrigin()
         }
       }
       if (introAnimation) {
@@ -118,10 +129,11 @@ const frag = `precision highp float; uniform float iTime; uniform vec2 iResoluti
       
       window.addEventListener("resize", updatePlacement)
       updatePlacement()
+      updateDynamicRayOrigin()
       animationId = requestAnimationFrame(loop)
       
-      const unsubX = dynamicOrigin?.x.onChange(v => { if (uniformsRef.current) uniformsRef.current.rayPos.value[0] = v * renderer.dpr })
-      const unsubY = dynamicOrigin?.y.onChange(v => { if (uniformsRef.current) uniformsRef.current.rayPos.value[1] = v * renderer.dpr })
+      const unsubX = dynamicOriginX?.onChange(() => updateDynamicRayOrigin())
+      const unsubY = dynamicOriginY?.onChange(() => updateDynamicRayOrigin())
 
       cleanupFunction = () => {
         cancelAnimationFrame(animationId)
@@ -133,7 +145,7 @@ const frag = `precision highp float; uniform float iTime; uniform vec2 iResoluti
 
     initializeWebGL()
     return () => cleanupFunction?.()
-  }, [isVisible, raysOrigin, raysColor, raysSpeed, lightSpread, rayLength, pulsating, fadeDistance, saturation, mouseInfluence, noiseAmount, distortion, introAnimation, dynamicOrigin])
+  }, [isVisible, raysOrigin, raysColor, raysSpeed, lightSpread, rayLength, pulsating, fadeDistance, saturation, mouseInfluence, noiseAmount, distortion, introAnimation, dynamicOriginX, dynamicOriginY])
 
   return <div ref={containerRef} className={`w-full h-full pointer-events-none z-[3] overflow-hidden relative ${className}`.trim()} />
 }

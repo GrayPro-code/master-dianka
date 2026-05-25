@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useMemo, useState, useRef } from "react"
 import Image from "next/image"
 import { motion, useMotionValue } from "framer-motion"
 
@@ -27,6 +27,8 @@ export function ThreeDCardHero() {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const rotation = useMotionValue(0)
+
+  const dynamicOrigin = useMemo(() => ({ x, y }), [x, y])
 
   const { isPositioned, anchor, restPosition } =
     useInitElasticBoxPositions(containerRef, x, y)
@@ -80,7 +82,7 @@ export function ThreeDCardHero() {
 
      {!isMobile && (
   <div className="absolute inset-0 z-0">
-    <BackgroundEffects dynamicOrigin={{ x, y }} isLightOn={isLightOn} />
+    <BackgroundEffects dynamicOrigin={dynamicOrigin} isLightOn={isLightOn} />
   </div>
 )}
 
