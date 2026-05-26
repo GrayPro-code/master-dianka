@@ -80,13 +80,13 @@ export function BookingForm() {
         {/* Левая часть — картинка */}
         <div className="md:w-1/2 bg-[#1A1A1D] flex flex-col justify-between p-5">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-[#AD46FF] font-bold text-lg">DIANA NAILS</h2>
+            <h2 className="text-[#AD46FF] font-bold text-lg">MASTER DIANKA</h2>
             <button className="text-xs text-gray-300 hover:text-[#AD46FF] transition">
               חזרה לאתר →
             </button>
           </div>
 
-          {/* Здесь ты подставишь свою картинку */}
+          {/* картинка */}
          <div className="rounded-xl overflow-hidden aspect-[1024/1225] bg-[#222]">
 
              <img src="/images/diana-booking.png" className="object-cover w-full h-full" /> 

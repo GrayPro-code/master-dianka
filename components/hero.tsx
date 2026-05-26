@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 
 
-export function ThreeDCardHero() {
+export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
   const [isLightOn, setIsLightOn] = useState(true)
@@ -72,33 +72,28 @@ export function ThreeDCardHero() {
         transition={{ duration: 0.5 }}
       />
 
-      {/* Переключатель */}
 
+      {!isMobile && (
+        <div className="absolute inset-0 z-0">
+          <BackgroundEffects dynamicOrigin={dynamicOrigin} isLightOn={isLightOn} />
+        </div>
+      )}
 
+      {/* Лампа — вынесена поверх всего */}
+      <div className="absolute inset-0 pointer-events-none z-40">
+        {!isMobile && isPositioned && (
+          <Lamp
+            x={x}
+            y={y}
+            rotation={rotation}
+            anchor={anchor}
+            isLightOn={isLightOn}
+            onPointerDown={handlePointerDown}
+            onCordPull={handleToggle}
+          />
+        )}
 
-     {!isMobile && (
-  <div className="absolute inset-0 z-0">
-    <BackgroundEffects dynamicOrigin={dynamicOrigin} isLightOn={isLightOn} />
-  </div>
-)}
-
-     {/* Лампа — вынесена поверх всего */}
-<div className="absolute inset-0 pointer-events-none z-40">
-  {!isMobile && isPositioned && (
-  <Lamp
-    x={x}
-    y={y}
-    rotation={rotation}
-    anchor={anchor}
-    isLightOn={isLightOn}
-    onPointerDown={handlePointerDown}
-    onCordPull={handleToggle}
-  />
-)}
-
-</div>
-
-
+      </div>
 
       {/* Правая часть — карточка */}
       <div className="md:w-1/2 w-full flex justify-center z-20">
@@ -118,33 +113,33 @@ export function ThreeDCardHero() {
                 className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-2xl"
                 alt="thumbnail"
               />
-              
+
             </CardItem>
             <div className="flex justify-between items-center mt-20">
 
-  {/* PORTFOLIO BUTTON */}
-  <Link href="/#projects">
-    <CardItem
-      translateZ={20}
-      target="__blank"
-      className="px-4 py-2 rounded-xl text-lg font-bold text-white"
-    >
-      פורטפוליו →
-    </CardItem>
-  </Link>
+              {/* PORTFOLIO BUTTON */}
+              <Link href="/#projects">
+                <CardItem
+                  translateZ={20}
+                  target="__blank"
+                  className="px-4 py-2 rounded-xl text-lg font-bold text-white"
+                >
+                  פורטפוליו →
+                </CardItem>
+              </Link>
 
-  {/* BOOKING BUTTON */}
-  <Link href="#booking">
-    <CardItem
-      translateZ={20}
-      target="__blank"
-      className="px-4 py-2 rounded-xl bg-purple-500 dark:bg-white dark:text-black text-white text-lg font-bold"
-    >
-      קבעי תור
-    </CardItem>
-  </Link>
+              {/* BOOKING BUTTON */}
+              <Link href="#booking">
+                <CardItem
+                  translateZ={20}
+                  target="__blank"
+                  className="px-4 py-2 rounded-xl bg-purple-500 dark:bg-white dark:text-black text-white text-lg font-bold"
+                >
+                  קבעי תור
+                </CardItem>
+              </Link>
 
-</div>
+            </div>
 
           </CardBody>
         </CardContainer>

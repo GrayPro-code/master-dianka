@@ -1,5 +1,5 @@
 import { Header } from "@/components/header"
-import { ThreeDCardHero } from "@/components/3d-card-demo"
+import { Hero } from "@/components/hero"
 import { AboutDiana } from "@/components/philosophy"
 import { Projects } from "@/components/projects"
 import { Portfolio } from "@/components/portfolio"
@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Header />
-      <ThreeDCardHero />
+      <Hero />
       <AboutDiana />
       <Projects />
       <Portfolio />
