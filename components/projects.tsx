@@ -50,28 +50,50 @@ export function Projects() {
   const [revealedImages, setRevealedImages] = useState<Set<number>>(new Set())
   const [scrollY, setScrollY] = useState(0)
   const imageRefs = useRef<(HTMLDivElement | null)[]>([])
-  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollYRef = useRef(0)
 
-  // Track scroll for parallax effect
+  // Обновляем позицию прокрутки с частотой анимационного кадра, чтобы не рендерить компонент на каждом событии scroll.
   useEffect(() => {
+    let frameId: number | null = null
+
     const handleScroll = () => {
-      setScrollY(window.scrollY)
+      scrollYRef.current = window.scrollY
+
+      if (frameId === null) {
+        frameId = window.requestAnimationFrame(() => {
+          setScrollY(scrollYRef.current)
+          frameId = null
+        })
+      }
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
   }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = imageRefs.current.indexOf(entry.target as HTMLDivElement)
-            if (index !== -1) {
-              setRevealedImages((prev) => new Set(prev).add(projects[index].id))
-            }
+          if (!entry.isIntersecting) {
+            return
           }
+
+          const projectId = Number((entry.target as HTMLElement).dataset.projectId)
+
+          if (Number.isNaN(projectId)) {
+            return
+          }
+
+          setRevealedImages((prev) => (prev.has(projectId) ? prev : new Set(prev).add(projectId)))
         })
       },
       { threshold: 0.2 },
@@ -84,8 +106,14 @@ export function Projects() {
     return () => observer.disconnect()
   }, [])
 
+  // Сохраняет DOM-ссылку на каждый элемент сетки, чтобы observer мог отслеживать его появление.
+  const setImageRef = (index: number) => (el: HTMLDivElement | null) => {
+    imageRefs.current[index] = el
+  }
+
+  // Рассчитывает поворот карточки для волнообразного эффекта и лёгкого наклона.
   const getSwayTransform = (index: number) => {
-    // Create a wave effect where cards sway differently
+    // Создаёт волновой эффект, чтобы карточки слегка колебались при прокрутке.
     const offset = (scrollY * 0.5 + index * 100) % 360
     const sway = Math.sin((offset * Math.PI) / 180) * 8 // 8 degrees of sway
     const tilt = index % 2 === 0 ? -2 : 2 // slight alternating tilt
@@ -99,7 +127,7 @@ export function Projects() {
   className="block md:hidden py-24 bg-gradient-to-b from-purple-100 to-purple-400"
 >
 
-      <div className="container mx-auto px-6 md:px-12" ref={containerRef}>
+      <div className="container mx-auto px-6 md:px-12">
         {/* Header */}
         <div className="text-center mb-20">
           <p className="text-purple-500 text-sm tracking-[0.3em] uppercase mb-4">{"הלויה שלי"}</p>
@@ -117,7 +145,8 @@ export function Projects() {
           {projects.map((project, index) => (
             <div
               key={project.id}
-              ref={(el) => (imageRefs.current[index] = el)}
+              data-project-id={project.id}
+              ref={setImageRef(index)}
               className="relative group cursor-pointer"
               style={{
                 perspective: "1200px",

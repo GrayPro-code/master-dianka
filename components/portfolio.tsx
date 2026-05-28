@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import Image from "next/image"
-import { useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import VariableProximity from "@/components/variable-proximity"
+import { pb } from "@/lib/pb"
 
 const initialImages = [
   // Top left area
@@ -168,8 +168,16 @@ const initialImages = [
   },
 ]
 
+const PORTFOLIO_LAYOUT_STORAGE_KEY = "portfolio-layout-v1"
+
+type PortfolioImage = (typeof initialImages)[number] & {
+  id: string
+  created?: string
+  updated?: string
+}
+
 export function Portfolio() {
-  const [images, setImages] = useState(initialImages)
+  const [images, setImages] = useState<PortfolioImage[]>([])
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const dragOffset = useRef({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -225,6 +233,79 @@ export function Portfolio() {
     setDraggingIndex(null)
   }, [])
 
+  useEffect(() => {
+    let isMounted = true
+
+    const loadPortfolioImages = async () => {
+      try {
+        const records = await pb.collection("portfolio").getFullList({ sort: "created" })
+
+        if (!isMounted) return
+
+        let savedLayout: PortfolioImage[] = []
+
+        if (typeof window !== "undefined") {
+          try {
+            const rawSavedLayout = window.localStorage.getItem(PORTFOLIO_LAYOUT_STORAGE_KEY)
+            if (rawSavedLayout) {
+              savedLayout = JSON.parse(rawSavedLayout) as PortfolioImage[]
+            }
+          } catch (error) {
+            console.error("Failed to read saved portfolio layout", error)
+          }
+        }
+
+        const savedPositions = new Map(savedLayout.map((item) => [item.id, item]))
+
+        const portfolioImages = records
+          .filter((record) => record.foto)
+          .map((record, index) => {
+            const baseLayout = initialImages[index] ?? initialImages[initialImages.length - 1]
+            const savedItem = savedPositions.get(record.id)
+
+            return {
+              id: record.id,
+              src: pb.files.getURL(record, record.foto),
+              alt: record.alt || baseLayout.alt,
+              top: savedItem?.top ?? baseLayout.top,
+              left: savedItem?.left ?? baseLayout.left,
+              rotate: savedItem?.rotate ?? baseLayout.rotate,
+              width: savedItem?.width ?? baseLayout.width,
+              height: savedItem?.height ?? baseLayout.height,
+              created: record.created,
+              updated: record.updated,
+            } satisfies PortfolioImage
+          })
+
+        setImages(portfolioImages)
+      } catch (error) {
+        console.error("Failed to load portfolio images from PocketBase", error)
+        setImages(
+          initialImages.map((image, index) => ({
+            ...image,
+            id: `fallback-${index}`,
+          })) as PortfolioImage[],
+        )
+      }
+    }
+
+    loadPortfolioImages()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (images.length === 0) return
+
+    try {
+      window.localStorage.setItem(PORTFOLIO_LAYOUT_STORAGE_KEY, JSON.stringify(images))
+    } catch (error) {
+      console.error("Failed to save portfolio layout", error)
+    }
+  }, [images])
+
   return (
     <main
   dir="ltr"
@@ -247,7 +328,7 @@ export function Portfolio() {
       {/* Scattered draggable images */}
       {images.map((image, index) => (
         <div
-          key={index}
+          key={image.id}
           className={`draggable-image absolute select-none ${
             draggingIndex === index ? "z-50 cursor-grabbing" : "cursor-grab hover:z-50"
           }`}
@@ -270,11 +351,10 @@ export function Portfolio() {
           onMouseDown={(e) => handleMouseDown(e, index)}
         >
           <div className="relative h-full w-full overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)]">
-            <Image
+            <img
               src={image.src || "/placeholder.svg"}
               alt={image.alt}
-              fill
-              className="pointer-events-none object-cover transition-transform duration-500 hover:scale-105"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
               draggable={false}
             />
           </div>

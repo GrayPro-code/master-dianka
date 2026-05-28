@@ -25,6 +25,10 @@ export function Reviews() {
   const [visible, setVisible] = useState<number[]>([])
   const refs = useRef<(HTMLDivElement | null)[]>([])
 
+  const setReviewRef = (index: number) => (el: HTMLDivElement | null) => {
+    refs.current[index] = el
+  }
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -65,7 +69,7 @@ export function Reviews() {
             <div
               key={index}
               data-index={index}
-              ref={(el) => (refs.current[index] = el)}
+              ref={setReviewRef(index)}
               className={`bg-white rounded-3xl shadow-sm p-8 text-right transition-all duration-700
                 ${visible.includes(index) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
               style={{ transitionDelay: `${index * 120}ms` }}

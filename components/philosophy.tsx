@@ -30,6 +30,10 @@ export function AboutDiana() {
   const [visibleItems, setVisibleItems] = useState<number[]>([])
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
 
+  const setItemRef = (index: number) => (el: HTMLDivElement | null) => {
+    itemRefs.current[index] = el
+  }
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
@@ -65,7 +69,7 @@ export function AboutDiana() {
             {aboutItems.map((item, index) => (
               <div
                 key={item.title}
-                ref={el => (itemRefs.current[index] = el)}
+                ref={setItemRef(index)}
                 data-index={index}
                 className={`bg-white rounded-3xl shadow-sm p-6 text-right transition-all duration-700 ${
                   visibleItems.includes(index)
