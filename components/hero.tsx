@@ -192,9 +192,13 @@ export function Hero() {
         </CardContainer>
       </div>
 
-      {/* Левая часть — текст */}
-      <div className="md:w-1/2 w-full text-right mb-10 md:mb-0 z-20" dir="rtl">
-        <h2 className="text-5xl md:text-6xl font-medium leading-[1.15] tracking-tight mb-6 text-balance lg:text-7xl text-purple-100">
+      {/* Левая часть — текст сверху, картинка снизу (desktop) */}
+      <div className=" md:flex md:w-1/2 w-full flex-col items-end justify-center gap-0 text-right z-20" dir="rtl">
+
+        <h2
+          className="block w-full text-right text-3xl md:text-4xl lg:text-5xl font-medium leading-[1.15] tracking-tight mb-6 mt-16 text-purple-100"
+          dir="rtl"
+        >
           ציפורניים
           <br />
           <HighlightedText>שמדברות עליך</HighlightedText>
@@ -205,6 +209,21 @@ export function Hero() {
           עיצוב מותאם אישית, חומרים איכותיים והרבה אהבה לפרטים הקטנים.
         </p>
 
+
+        {/* картинка */}
+        <div className="w-full max-w-2xl flex justify-center ">
+          <Image
+            src="/images/desk.png"
+            alt="desk"
+            width={500}
+            height={400}
+            className="object-contain w-full h-auto"
+            priority
+          />
+        </div>
+
+
+        {/* Левая часть — текст */}
         <div className="flex justify-between w-full mt-8 text-purple-200 font-medium" dir="rtl">
           <div className="flex flex-col items-center text-center w-1/3">
             <span className="text-2xl leading-none">⭐</span>
@@ -225,3 +244,4 @@ export function Hero() {
     </section>
   )
 }
+

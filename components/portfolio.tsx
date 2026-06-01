@@ -1,179 +1,48 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState, useRef, useCallback } from "react"
 import VariableProximity from "@/components/variable-proximity"
 import { pb } from "@/lib/pb"
 
-const initialImages = [
-  // Top left area
-  {
-    src: "/images/foto1.jpg",
-    alt: "Mountain landscape",
-    top: 3,
-    left: -2,
-    rotate: -12,
-    width: 280,
-    height: 200,
-  },
-  {
-    src: "/images/foto2.jpg",
-    alt: "Ocean waves",
-    top: 5,
-    left: 18,
-    rotate: 5,
-    width: 180,
-    height: 140,
-  },
-  {
-    src: "/images/foto3.jpg",
-    alt: "Forest trees",
-    top: -3,
-    left: 38,
-    rotate: -3,
-    width: 200,
-    height: 180,
-  },
-  // Top right area
-  {
-    src: "/images/foto4.jpg",
-    alt: "City skyline",
-    top: 2,
-    left: 58,
-    rotate: 8,
-    width: 220,
-    height: 160,
-  },
-  {
-    src: "/images/foto5.jpg",
-    alt: "Desert dunes",
-    top: 5,
-    left: 78,
-    rotate: -5,
-    width: 200,
-    height: 150,
-  },
-  {
-    src: "/images/foto6.jpg",
-    alt: "Waterfall",
-    top: 0,
-    left: 92,
-    rotate: 12,
-    width: 180,
-    height: 220,
-  },
-  // Left side middle
-  {
-    src: "/images/foto7.jpg",
-    alt: "Beach scene",
-    top: 32,
-    left: -5,
-    rotate: 6,
-    width: 240,
-    height: 180,
-  },
-  {
-    src: "/images/foto8.jpg",
-    alt: "Mountain view",
-    top: 45,
-    left: 8,
-    rotate: -8,
-    width: 160,
-    height: 200,
-  },
-  // Right side middle
-  {
-    src: "/images/foto9.jpg",
-    alt: "Forest path",
-    top: 28,
-    left: 85,
-    rotate: -6,
-    width: 200,
-    height: 160,
-  },
-  {
-    src: "/images/foto10.jpg",
-    alt: "Night city",
-    top: 48,
-    left: 82,
-    rotate: 10,
-    width: 220,
-    height: 180,
-  },
-  // Bottom left area
-  {
-    src: "/images/foto11.jpg",
-    alt: "Sand patterns",
-    top: 68,
-    left: -3,
-    rotate: -4,
-    width: 260,
-    height: 200,
-  },
-  {
-    src: "/images/foto12.jpg",
-    alt: "Cascade",
-    top: 72,
-    left: 18,
-    rotate: 7,
-    width: 180,
-    height: 160,
-  },
-  {
-    src: "/images/foto13.jpg",
-    alt: "Peak view",
-    top: 78,
-    left: 32,
-    rotate: -2,
-    width: 160,
-    height: 140,
-  },
-  // Bottom center-right area
-  {
-    src: "/images/foto14.jpg",
-    alt: "Waves",
-    top: 75,
-    left: 48,
-    rotate: 4,
-    width: 180,
-    height: 150,
-  },
-  {
-    src: "/images/foto15.jpg",
-    alt: "Trees",
-    top: 72,
-    left: 62,
-    rotate: -6,
-    width: 200,
-    height: 170,
-  },
-  {
-    src: "/images/foto12.jpg",
-    alt: "Skyline",
-    top: 70,
-    left: 78,
-    rotate: 8,
-    width: 220,
-    height: 180,
-  },
-  {
-    src: "/images/foto7.jpg",
-    alt: "Dunes",
-    top: 65,
-    left: 92,
-    rotate: -10,
-    width: 180,
-    height: 220,
-  },
+/**
+ * Layout presets: position templates for portfolio images
+ * Applied in order to records from database
+ */
+const LAYOUT_PRESETS: Array<{ top: number; left: number; rotate: number; width: number; height: number }> = [
+  { top: 3, left: -2, rotate: -12, width: 280, height: 200 },
+  { top: 5, left: 18, rotate: 5, width: 180, height: 140 },
+  { top: -3, left: 38, rotate: -3, width: 200, height: 180 },
+  { top: 2, left: 58, rotate: 8, width: 220, height: 160 },
+  { top: 5, left: 78, rotate: -5, width: 200, height: 150 },
+  { top: 0, left: 92, rotate: 12, width: 180, height: 220 },
+  { top: 32, left: -5, rotate: 6, width: 240, height: 180 },
+  { top: 45, left: 8, rotate: -8, width: 160, height: 200 },
+  { top: 28, left: 85, rotate: -6, width: 200, height: 160 },
+  { top: 48, left: 82, rotate: 10, width: 220, height: 180 },
+  { top: 68, left: -3, rotate: -4, width: 260, height: 200 },
+  { top: 72, left: 18, rotate: 7, width: 180, height: 160 },
+  { top: 78, left: 32, rotate: -2, width: 160, height: 140 },
+  { top: 75, left: 48, rotate: 4, width: 180, height: 150 },
+  { top: 72, left: 62, rotate: -6, width: 200, height: 170 },
+  { top: 70, left: 78, rotate: 8, width: 220, height: 180 },
+  { top: 65, left: 92, rotate: -10, width: 180, height: 220 },
 ]
 
-const PORTFOLIO_LAYOUT_STORAGE_KEY = "portfolio-layout-v1"
+const STORAGE_KEY = "portfolio-layout"
 
-type PortfolioImage = (typeof initialImages)[number] & {
+type Layout = {
+  top: number
+  left: number
+  rotate: number
+  width: number
+  height: number
+}
+
+type PortfolioImage = Layout & {
   id: string
-  created?: string
-  updated?: string
+  src: string
+  alt: string
 }
 
 export function Portfolio() {
@@ -184,6 +53,74 @@ export function Portfolio() {
   const animationFrameRef = useRef<number | null>(null)
   const pendingPosition = useRef({ left: 0, top: 0 })
   const textContainerRef = useRef<HTMLDivElement>(null)
+
+  // Load portfolio images from PocketBase
+  useEffect(() => {
+    let isMounted = true
+
+    const load = async () => {
+      try {
+        const records = await pb.collection("portfolio").getFullList<any>({ sort: "created" })
+
+        if (!isMounted) return
+
+        // Restore saved positions from localStorage
+        let savedPositions: Record<string, Partial<Layout>> = {}
+        try {
+          const saved = window.localStorage.getItem(STORAGE_KEY)
+          if (saved) {
+            const data = JSON.parse(saved) as Record<string, Partial<Layout>>
+            savedPositions = data
+          }
+        } catch (e) {
+          console.warn("Could not restore layout", e)
+        }
+
+        // Build images from records
+        const items = records
+          .filter((r) => r.foto)
+          .map((record, idx) => {
+            const preset = LAYOUT_PRESETS[idx] || LAYOUT_PRESETS[LAYOUT_PRESETS.length - 1]
+            const saved = savedPositions[record.id]
+
+            return {
+              id: record.id,
+              src: pb.files.getURL(record, record.foto),
+              alt: record.alt || `Image ${idx + 1}`,
+              top: saved?.top ?? preset.top,
+              left: saved?.left ?? preset.left,
+              rotate: saved?.rotate ?? preset.rotate,
+              width: saved?.width ?? preset.width,
+              height: saved?.height ?? preset.height,
+            }
+          })
+
+        setImages(items)
+      } catch (error) {
+        console.error("Portfolio load error:", error)
+      }
+    }
+
+    load()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Persist layout changes
+  useEffect(() => {
+    if (images.length === 0) return
+
+    try {
+      const data: Record<string, Partial<Layout>> = {}
+      images.forEach(({ id, top, left, rotate, width, height }) => {
+        data[id] = { top, left, rotate, width, height }
+      })
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch (e) {
+      console.warn("Could not save layout", e)
+    }
+  }, [images])
 
   const handleMouseDown = (e: React.MouseEvent, index: number) => {
     e.preventDefault()
@@ -199,7 +136,6 @@ export function Portfolio() {
 
   const updatePosition = useCallback(() => {
     if (draggingIndex === null) return
-
     setImages((prev) =>
       prev.map((img, i) =>
         i === draggingIndex ? { ...img, left: pendingPosition.current.left, top: pendingPosition.current.top } : img,
@@ -211,13 +147,11 @@ export function Portfolio() {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (draggingIndex === null || !containerRef.current) return
-
-      const containerRect = containerRef.current.getBoundingClientRect()
+      const rect = containerRef.current.getBoundingClientRect()
       pendingPosition.current = {
-        left: ((e.clientX - containerRect.left - dragOffset.current.x) / containerRect.width) * 100,
-        top: ((e.clientY - containerRect.top - dragOffset.current.y) / containerRect.height) * 100,
+        left: ((e.clientX - rect.left - dragOffset.current.x) / rect.width) * 100,
+        top: ((e.clientY - rect.top - dragOffset.current.y) / rect.height) * 100,
       }
-
       if (!animationFrameRef.current) {
         animationFrameRef.current = requestAnimationFrame(updatePosition)
       }
@@ -233,85 +167,11 @@ export function Portfolio() {
     setDraggingIndex(null)
   }, [])
 
-  useEffect(() => {
-    let isMounted = true
-
-    const loadPortfolioImages = async () => {
-      try {
-        const records = await pb.collection("portfolio").getFullList({ sort: "created" })
-
-        if (!isMounted) return
-
-        let savedLayout: PortfolioImage[] = []
-
-        if (typeof window !== "undefined") {
-          try {
-            const rawSavedLayout = window.localStorage.getItem(PORTFOLIO_LAYOUT_STORAGE_KEY)
-            if (rawSavedLayout) {
-              savedLayout = JSON.parse(rawSavedLayout) as PortfolioImage[]
-            }
-          } catch (error) {
-            console.error("Failed to read saved portfolio layout", error)
-          }
-        }
-
-        const savedPositions = new Map(savedLayout.map((item) => [item.id, item]))
-
-        const portfolioImages = records
-          .filter((record) => record.foto)
-          .map((record, index) => {
-            const baseLayout = initialImages[index] ?? initialImages[initialImages.length - 1]
-            const savedItem = savedPositions.get(record.id)
-
-            return {
-              id: record.id,
-              src: pb.files.getURL(record, record.foto),
-              alt: record.alt || baseLayout.alt,
-              top: savedItem?.top ?? baseLayout.top,
-              left: savedItem?.left ?? baseLayout.left,
-              rotate: savedItem?.rotate ?? baseLayout.rotate,
-              width: savedItem?.width ?? baseLayout.width,
-              height: savedItem?.height ?? baseLayout.height,
-              created: record.created,
-              updated: record.updated,
-            } satisfies PortfolioImage
-          })
-
-        setImages(portfolioImages)
-      } catch (error) {
-        console.error("Failed to load portfolio images from PocketBase", error)
-        setImages(
-          initialImages.map((image, index) => ({
-            ...image,
-            id: `fallback-${index}`,
-          })) as PortfolioImage[],
-        )
-      }
-    }
-
-    loadPortfolioImages()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (images.length === 0) return
-
-    try {
-      window.localStorage.setItem(PORTFOLIO_LAYOUT_STORAGE_KEY, JSON.stringify(images))
-    } catch (error) {
-      console.error("Failed to save portfolio layout", error)
-    }
-  }, [images])
-
   return (
     <main
-  dir="ltr"
-  ref={containerRef}
-  className="hidden md:block relative h-screen overflow-hidden bg-[#ed89f7]"
-
+      dir="ltr"
+      ref={containerRef}
+      className="hidden md:block relative h-screen overflow-hidden bg-[#ed89f7]"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -325,7 +185,7 @@ export function Portfolio() {
         }}
       />
 
-      {/* Scattered draggable images */}
+      {/* Portfolio images */}
       {images.map((image, index) => (
         <div
           key={image.id}
@@ -352,7 +212,7 @@ export function Portfolio() {
         >
           <div className="relative h-full w-full overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)]">
             <img
-              src={image.src || "/placeholder.svg"}
+              src={image.src}
               alt={image.alt}
               className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
               draggable={false}
@@ -361,6 +221,7 @@ export function Portfolio() {
         </div>
       ))}
 
+      {/* Center text overlay */}
       <div
         ref={textContainerRef}
         className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
@@ -398,15 +259,14 @@ export function Portfolio() {
               background: "linear-gradient(135deg, #e8e8e8 0%, #6b6b6b 25%, #ffffff 50%, #6b6b6b 75%, #e8e8e8 100%)",
             }}
           >
-           <a
-  href="https://www.instagram.com/_master_dianka_/"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="rounded-full bg-[#0a0a0a] px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-black inline-block"
->
-  Follow me
-</a>
-
+            <a
+              href="https://www.instagram.com/_master_dianka_/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#0a0a0a] px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-black inline-block"
+            >
+              Follow me
+            </a>
           </div>
         </div>
       </div>

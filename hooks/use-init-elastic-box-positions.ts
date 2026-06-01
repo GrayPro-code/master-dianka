@@ -38,7 +38,7 @@ export function useInitElasticBoxPositions(
    *   0.13 = 13% высоты контейнера
    */
 
-  const LAMP_X_PERCENT = 0.30          // 30% ширины — смещено вправо
+  const LAMP_X_PERCENT = 0.25          // 25% ширины — смещено вправо
   const LAMP_ANCHOR_Y_PERCENT = 0.00   // крепление в самом верху
   const LAMP_REST_Y_PERCENT = 0.13     // лампа висит на 13% высоты
 
