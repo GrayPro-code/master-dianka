@@ -1,14 +1,7 @@
 "use client"
 
 import { useState } from "react"
-
-/**
- * Компонент интерактивной формы записи.
- * После подключения backend (PocketBase) можно будет:
- * 1. Отправлять данные на сервер (POST /api/book)
- * 2. На сервере — пересылать сообщение в Telegram Диане
- * 3. Добавить админку для управления портфолио и расписанием
- */
+import { pb } from "@/lib/pb"
 
 export function BookingForm() {
   const [formData, setFormData] = useState({
@@ -18,8 +11,10 @@ export function BookingForm() {
     date: "",
     time: "",
     notes: "",
+    secret: "", 
   })
 
+  const [startTime] = useState(Date.now()) // таймер
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
@@ -40,6 +35,27 @@ export function BookingForm() {
     setError("")
     setSuccess("")
 
+    // 1) Honeypot
+    if (formData.secret !== "") {
+      setError("שגיאה. נסי שוב.")
+      return
+    }
+
+    // 2) Таймер
+    const timeSpent = Date.now() - startTime
+    if (timeSpent < 3000) {
+      setError("נא להמתין רגע לפני השליחה.")
+      return
+    }
+
+    // 3) Rate limit
+    const lastSubmit = localStorage.getItem("lastSubmit")
+    if (lastSubmit && Date.now() - Number(lastSubmit) < 60000) {
+      setError("אפשר לשלוח בקשה פעם בדקה.")
+      return
+    }
+
+    // Проверка обязательных полей
     if (!formData.name || !formData.phone || !formData.service || !formData.date || !formData.time) {
       setError("נא למלא את כל השדות החובה.")
       return
@@ -48,10 +64,9 @@ export function BookingForm() {
     setIsSubmitting(true)
 
     try {
-      // 🔗 Здесь будет запрос к PocketBase
-      // await pb.collection("bookings").create(formData)
+      await pb.collection("bookings").create(formData)
 
-      await new Promise((r) => setTimeout(r, 800)) // имитация запроса
+      localStorage.setItem("lastSubmit", Date.now().toString())
 
       setSuccess("הבקשה נשלחה! אחזור אלייך בהקדם לאישור סופי.")
       setFormData({
@@ -61,6 +76,7 @@ export function BookingForm() {
         date: "",
         time: "",
         notes: "",
+        secret: "",
       })
     } catch (err) {
       console.error(err)
@@ -86,10 +102,8 @@ export function BookingForm() {
             </button>
           </div>
 
-          {/* картинка */}
-         <div className="rounded-xl overflow-hidden aspect-[1024/1225] bg-[#222]">
-
-             <img src="/images/diana-booking.png" className="object-cover w-full h-full" /> 
+          <div className="rounded-xl overflow-hidden aspect-[1024/1225] bg-[#222]">
+            <img src="/images/diana-booking.png" className="object-cover w-full h-full" />
             תמונה שלך כאן
           </div>
 
@@ -106,6 +120,15 @@ export function BookingForm() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Honeypot — скрытое поле */}
+            <input
+              type="text"
+              name="secret"
+              value={formData.secret}
+              onChange={handleChange}
+              className="hidden"
+            />
 
             {/* Имя */}
             <div>
